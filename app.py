@@ -1,23 +1,12 @@
-"""
-CORTEX - Backend Security System
-Main application entry point.
-"""
-
 from flask import Flask
+from database import init_db
 
+app = Flask(__name__)
 
-def create_app():
-    """Create and configure the Flask application."""
-    app = Flask(__name__)
-    # TODO: Load config, register blueprints, init extensions
-    return app
-
-
-def run_app():
-    """Run the application."""
-    app = create_app()
-    app.run()
-
+@app.route("/")
+def home():
+    return "CORTEX Core Engine Running"
 
 if __name__ == "__main__":
-    run_app()
+    init_db()
+    app.run(debug=True)
