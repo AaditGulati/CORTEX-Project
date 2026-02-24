@@ -7,7 +7,7 @@ def detect_brute_force(user_id):
     conn = get_session()
     cursor = conn.cursor()
 
-    five_minutes_ago = datetime.now() - timedelta(minutes=5)
+    five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
 
     cursor.execute("""
         SELECT COUNT(*) FROM login_attempts

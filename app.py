@@ -23,6 +23,11 @@ def login():
     device = request.headers.get("User-Agent")
 
     result = handle_login(data["username"], data["password"], ip, device)
+    from engine.rules import run_rules
+    from datetime import datetime
+
+    triggered = run_rules(result["user_id"], ip, device, datetime.now())
+    print("Triggered Rules:", triggered)
     return jsonify(result)
 
 
