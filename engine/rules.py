@@ -1,10 +1,10 @@
-from database import get_db_connection
+from database import get_session
 from datetime import datetime, timedelta
 import json
 
 
 def detect_brute_force(user_id):
-    conn = get_db_connection()
+    conn = get_session()
     cursor = conn.cursor()
 
     five_minutes_ago = datetime.now() - timedelta(minutes=5)
@@ -20,13 +20,13 @@ def detect_brute_force(user_id):
     conn.close()
 
     if count >= 5:
-        return {"rule": "Brute Force", "risk_points": 40}
+        return {"name": "Brute Force", "weight": 40}
 
     return None
 
 
 def detect_time_anomaly(user_id, login_hour):
-    conn = get_db_connection()
+    conn = get_session()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -41,13 +41,13 @@ def detect_time_anomaly(user_id, login_hour):
     if baseline:
         start_hour, end_hour = baseline
         if login_hour < start_hour or login_hour > end_hour:
-            return {"rule": "Abnormal Login Time", "risk_points": 20}
+            return {"name": "Abnormal Login Time", "weight": 20}
 
     return None
 
 
 def detect_unknown_ip(user_id, current_ip):
-    conn = get_db_connection()
+    conn = get_session()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -61,13 +61,13 @@ def detect_unknown_ip(user_id, current_ip):
     if result and result[0]:
         known_ips = json.loads(result[0])
         if current_ip not in known_ips:
-            return {"rule": "Unknown IP", "risk_points": 20}
+            return {"name": "Unknown IP", "weight": 20}
 
     return None
 
 
 def detect_new_device(user_id, current_device):
-    conn = get_db_connection()
+    conn = get_session()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -81,14 +81,13 @@ def detect_new_device(user_id, current_device):
     if result and result[0]:
         known_devices = json.loads(result[0])
         if current_device not in known_devices:
-            return {"rule": "New Device", "risk_points": 20}
+            return {"name": "New Device", "weight": 20}
 
     return None
 
 
-def run_all_rules(user_id, ip, device, timestamp):
+def run_rules(user_id, ip, device, timestamp):
     results = []
-
     login_hour = timestamp.hour
 
     rule_checks = [
