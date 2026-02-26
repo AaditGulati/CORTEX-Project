@@ -36,25 +36,50 @@ def login():
         device
     )
 
-    # Only proceed if authentication successful
     if result.get("user_id"):
 
-        # ✅ Module 3 – Baseline Engine
-        baseline_result = run_baseline_engine(result["user_id"])
+        user_id = result["user_id"]
+
+        # Module 3 – Baseline
+        baseline_result = run_baseline_engine(user_id)
         print("Baseline Result:", baseline_result)
 
-        # ✅ Module 4 – Rule Engine
+        # Module 4 – Rule Engine
         from engine.rules import run_rules
         from datetime import datetime
 
         triggered = run_rules(
-            result["user_id"],
+            user_id,
             ip,
             device,
             datetime.now()
         )
 
         print("Triggered Rules:", triggered)
+
+        # 🔥 Convert rule format for risk scoring
+        formatted_rules = [
+            {
+                "rule_name": rule["name"],
+                "risk_points": rule["weight"]
+            }
+            for rule in triggered
+        ]
+
+        # Add baseline score as contextual rule
+        if baseline_result["baseline_score"] > 0:
+            formatted_rules.append({
+                "rule_name": "Behavioral Anomaly",
+                "risk_points": baseline_result["baseline_score"]
+            })
+
+        # Module 5 – Risk Scoring
+        from engine.risk_scoring import calculate_risk
+
+        final_score, severity = calculate_risk(user_id, formatted_rules)
+
+        print("Final Risk Score:", final_score)
+        print("Severity:", severity)
 
     return jsonify(result)
 
