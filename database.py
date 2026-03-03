@@ -23,7 +23,12 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        -- Module 6 Enforcement Fields
+        is_locked INTEGER DEFAULT 0,
+        lock_until TEXT,
+        lock_level INTEGER DEFAULT 0
     );
     """)
 
@@ -84,6 +89,20 @@ def init_db():
         tightened_end_hour INTEGER,
         active_until TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+    """)
+
+    # -------------------------------
+    # Module 6 - IP Lockdown Table
+    # -------------------------------
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ip_lockdowns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip_address TEXT NOT NULL,
+        lock_until TEXT NOT NULL,
+        severity INTEGER,
+        reason TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
 

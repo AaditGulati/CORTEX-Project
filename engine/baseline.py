@@ -49,7 +49,8 @@ def detect_time_deviation(user_id, current_time):
     deviation = abs(current_time.hour - avg_hour)
 
     if deviation > BASELINE_TIME_THRESHOLD:
-        return True, 30
+        # Reduced from 30 → 15
+        return True, 15
 
     return False, 0
 
@@ -71,7 +72,8 @@ def detect_frequency_spike(user_id):
     conn.close()
 
     if result["count"] > BASELINE_FREQ_THRESHOLD:
-        return True, 40
+        # Reduced from 40 → 20
+        return True, 20
 
     return False, 0
 
