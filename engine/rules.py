@@ -20,7 +20,7 @@ def detect_brute_force(user_id):
     conn.close()
 
     if count >= 5:
-        return {"name": "Brute Force", "weight": 40}
+        return {"name": "Brute Force", "weight": 30}
 
     return None
 
