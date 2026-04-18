@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORTEX — Admin Login</title>
+    <link rel="stylesheet" href="/dashboard/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo">
+                <span class="logo-icon">◆</span>
+                <span class="logo-text">CORTEX</span>
+            </div>
+            <span class="logo-sub">Admin Authentication</span>
+
+            <input
+                type="password"
+                id="admin-token-input"
+                class="login-input"
+                placeholder="Enter admin token..."
+                onkeypress="handleLoginKeypress(event)"
+                autofocus
+            >
+
+            <button class="login-btn" onclick="adminLogin()">
+                AUTHENTICATE →
+            </button>
+
+            <div class="login-error" id="login-error"></div>
+        </div>
+    </div>
+
+    <script src="/dashboard/static/dashboard.js"></script>
+</body>
+</html>

@@ -106,6 +106,71 @@ def init_db():
     );
     """)
 
+    # -------------------------------
+    # Module 8 - Enforcement Logs Table
+    # -------------------------------
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS enforcement_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ip_address TEXT,
+        risk_score INTEGER,
+        severity TEXT,
+        triggered_rules TEXT,
+        enforcement_action TEXT,
+        decay_applied INTEGER DEFAULT 0,
+        explanation TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+    """)
+
+    # -------------------------------
+    # Module 10 - User Location Cache
+    # -------------------------------
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_location_cache (
+        user_id INTEGER PRIMARY KEY,
+        last_ip TEXT,
+        last_lat REAL,
+        last_lon REAL,
+        last_city TEXT,
+        last_country TEXT,
+        last_seen TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+    """)
+
+    # -------------------------------
+    # Module 11 - Device Fingerprints
+    # -------------------------------
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS device_fingerprints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        fingerprint_hash TEXT,
+        user_agent TEXT,
+        language TEXT,
+        first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        seen_count INTEGER DEFAULT 1,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+    """)
+
+    # -------------------------------
+    # Module 12 - Threat Intel Feeds
+    # -------------------------------
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS threat_feeds (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip_range TEXT,
+        threat_type TEXT,
+        source TEXT,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
     conn.commit()
     conn.close()
 

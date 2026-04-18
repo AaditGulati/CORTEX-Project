@@ -91,3 +91,60 @@ def run_baseline_engine(user_id):
         "frequency_anomaly": freq_flag,
         "baseline_score": total_score
     }
+
+
+def update_user_baseline(user_id, ip, device):
+    """
+    Update the user_baseline table with the current login's IP, device, and hour.
+    Called on every successful login to build the user's behavioral profile.
+    - known_ips: JSON array of all IPs this user has logged in from
+    - known_devices: JSON array of all User-Agent strings seen
+    - login_start_hour / login_end_hour: min/max login hours observed
+    """
+    import json
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    current_hour = datetime.utcnow().hour
+
+    # Check if baseline exists
+    cursor.execute("SELECT * FROM user_baseline WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+
+    if row:
+        # Update existing baseline
+        known_ips = json.loads(row["known_ips"]) if row["known_ips"] else []
+        known_devices = json.loads(row["known_devices"]) if row["known_devices"] else []
+        start_hour = row["login_start_hour"] if row["login_start_hour"] is not None else current_hour
+        end_hour = row["login_end_hour"] if row["login_end_hour"] is not None else current_hour
+
+        # Add new IP/device if not already known
+        if ip and ip not in known_ips:
+            known_ips.append(ip)
+        if device and device not in known_devices:
+            known_devices.append(device)
+
+        # Expand login hour window
+        start_hour = min(start_hour, current_hour)
+        end_hour = max(end_hour, current_hour)
+
+        cursor.execute("""
+            UPDATE user_baseline
+            SET known_ips = ?, known_devices = ?,
+                login_start_hour = ?, login_end_hour = ?
+            WHERE user_id = ?
+        """, (json.dumps(known_ips), json.dumps(known_devices),
+              start_hour, end_hour, user_id))
+    else:
+        # Create new baseline
+        cursor.execute("""
+            INSERT INTO user_baseline (user_id, known_ips, known_devices,
+                                       login_start_hour, login_end_hour)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, json.dumps([ip] if ip else []),
+              json.dumps([device] if device else []),
+              current_hour, current_hour))
+
+    conn.commit()
+    conn.close()

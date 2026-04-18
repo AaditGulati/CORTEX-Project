@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}CORTEX — Enforcement Logs{% endblock %}
+{% block heading %}Enforcement Log Viewer{% endblock %}
+{% block breadcrumb %}CORTEX / Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Enforcement Logs</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <select class="filter-select" id="filter-severity" onchange="applyLogFilters()">
+            <option value="">All Severities</option>
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+        </select>
+
+        <select class="filter-select" id="filter-action" onchange="applyLogFilters()">
+            <option value="">All Actions</option>
+            <option value="ALLOWED">ALLOWED</option>
+            <option value="WARNED">WARNED</option>
+            <option value="LOCKED">LOCKED</option>
+            <option value="IP_BLOCKED">IP_BLOCKED</option>
+        </select>
+
+        <button class="btn btn-sm" onclick="applyLogFilters()">Apply</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>IP</th>
+                    <th>Risk Score</th>
+                    <th>Severity</th>
+                    <th>Action</th>
+                    <th>Decay</th>
+                </tr>
+            </thead>
+            <tbody id="logs-tbody">
+                <tr><td colspan="7"><div class="loader"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    loadLogs(1);
+</script>
+{% endblock %}

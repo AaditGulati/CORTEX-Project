@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}CORTEX — Overview{% endblock %}
+{% block heading %}Overview{% endblock %}
+{% block breadcrumb %}CORTEX / Overview{% endblock %}
+
+{% block content %}
+<!-- Metric Cards -->
+<div class="metrics-grid">
+    <div class="metric-card blue">
+        <div class="metric-label">Total Users</div>
+        <div class="metric-value blue" id="metric-users">—</div>
+    </div>
+    <div class="metric-card green">
+        <div class="metric-label">Logins (24h)</div>
+        <div class="metric-value green" id="metric-logins">—</div>
+    </div>
+    <div class="metric-card green">
+        <div class="metric-label">Successful</div>
+        <div class="metric-value green" id="metric-success">—</div>
+    </div>
+    <div class="metric-card red">
+        <div class="metric-label">Failed</div>
+        <div class="metric-value red" id="metric-fail">—</div>
+    </div>
+    <div class="metric-card amber">
+        <div class="metric-label">Active Locks</div>
+        <div class="metric-value amber" id="metric-locks">—</div>
+        <div class="metric-sub" id="sub-locks"></div>
+    </div>
+    <div class="metric-card red">
+        <div class="metric-label">Avg Risk Today</div>
+        <div class="metric-value red" id="metric-risk">—</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Top Risk Users -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Top 5 Highest-Risk Users</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Cumulative Risk</th>
+                        <th>Severity</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody id="top-risk-tbody">
+                    <tr><td colspan="4"><div class="loader"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Enforcement Actions -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Recent Enforcement Actions</span>
+            <span class="badge badge-low" style="font-size:9px">AUTO-REFRESH 30s</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>User</th>
+                        <th>IP</th>
+                        <th>Score</th>
+                        <th>Severity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-actions-tbody">
+                    <tr><td colspan="6"><div class="loader"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    startAutoRefresh(loadOverview, 30000);
+</script>
+{% endblock %}
