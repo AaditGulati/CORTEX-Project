@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}CORTEX — User Risk Monitor{% endblock %}
+{% block heading %}User Risk Monitor{% endblock %}
+{% block breadcrumb %}CORTEX / Users{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Registered Users</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Last Login</th>
+                    <th>Cumulative Risk</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Total Logins</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-tbody">
+                <tr><td colspan="7"><div class="loader"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal-overlay" id="user-modal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modal-content">
+            <div class="loader"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    startAutoRefresh(loadUsers, 30000);
+</script>
+{% endblock %}

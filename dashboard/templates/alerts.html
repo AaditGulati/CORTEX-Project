@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CORTEX – Alert Triage</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #080c10; color: #e8f4f8; font-family: 'Courier New', monospace; }
+    .topbar { padding: 16px 28px; border-bottom: 1px solid #1e2d3d; display: flex; align-items: center; justify-content: space-between; background: #0e1419; }
+    .topbar h1 { font-size: 18px; letter-spacing: 1px; }
+    .topbar a { color: #4a6278; font-size: 12px; text-decoration: none; }
+    .topbar a:hover { color: #00d4ff; }
+    .stats-row { display: flex; gap: 16px; padding: 20px 28px; }
+    .stat-box { background: #0e1419; border: 1px solid #1e2d3d; border-radius: 10px; padding: 14px 20px; min-width: 120px; }
+    .stat-label { font-size: 10px; letter-spacing: 2px; color: #4a6278; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-val { font-size: 28px; font-weight: 700; }
+    .stat-val.open { color: #ff3b5c; }
+    .stat-val.resolved { color: #00ff9d; }
+    .stat-val.dismissed { color: #4a6278; }
+    .filters { display: flex; gap: 10px; padding: 0 28px 16px; align-items: center; flex-wrap: wrap; }
+    .filters select, .filters input { background: #0e1419; border: 1px solid #1e2d3d; color: #e8f4f8; padding: 8px 12px; border-radius: 7px; font-family: inherit; font-size: 12px; outline: none; }
+    .filters select:focus, .filters input:focus { border-color: #00d4ff; }
+    .btn { padding: 8px 16px; border: none; border-radius: 7px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+    .btn-primary { background: #00d4ff; color: #000; }
+    .btn-primary:hover { box-shadow: 0 4px 14px rgba(0,212,255,0.3); }
+    .btn-danger { background: rgba(255,59,92,0.15); color: #ff3b5c; border: 1px solid rgba(255,59,92,0.3); }
+    .btn-danger:hover { background: rgba(255,59,92,0.25); }
+    .btn-ghost { background: transparent; color: #4a6278; border: 1px solid #1e2d3d; }
+    .btn-ghost:hover { color: #e8f4f8; border-color: #4a6278; }
+    .bulk-bar { display: none; align-items: center; gap: 12px; padding: 10px 28px; background: rgba(0,212,255,0.05); border-top: 1px solid rgba(0,212,255,0.1); border-bottom: 1px solid rgba(0,212,255,0.1); font-size: 12px; color: #00d4ff; }
+    .bulk-bar.visible { display: flex; }
+    .table-wrap { padding: 0 28px 40px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 10px; letter-spacing: 2px; color: #4a6278; text-transform: uppercase; padding: 10px 12px; border-bottom: 1px solid #1e2d3d; }
+    td { padding: 12px 12px; border-bottom: 1px solid #0e1419; font-size: 12px; vertical-align: top; }
+    tr:hover td { background: #0e1419; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+    .badge-HIGH { background: rgba(255,59,92,0.15); color: #ff3b5c; }
+    .badge-MEDIUM { background: rgba(255,184,48,0.15); color: #ffb830; }
+    .badge-LOW { background: rgba(0,255,157,0.1); color: #00ff9d; }
+    .badge-LOCKED { background: rgba(255,59,92,0.15); color: #ff3b5c; }
+    .badge-ALLOWED { background: rgba(0,255,157,0.1); color: #00ff9d; }
+    .badge-WARNED { background: rgba(255,184,48,0.15); color: #ffb830; }
+    .badge-IP_BLOCKED { background: rgba(255,59,92,0.2); color: #ff3b5c; }
+    .action-btns { display: flex; gap: 6px; }
+    .btn-resolve { background: rgba(0,255,157,0.1); color: #00ff9d; border: 1px solid rgba(0,255,157,0.2); padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; font-family: inherit; transition: all 0.15s; }
+    .btn-resolve:hover { background: rgba(0,255,157,0.2); }
+    .btn-dismiss { background: rgba(74,98,120,0.15); color: #4a6278; border: 1px solid #1e2d3d; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; font-family: inherit; transition: all 0.15s; }
+    .btn-dismiss:hover { color: #e8f4f8; border-color: #4a6278; }
+    .rules-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .rule-tag { background: rgba(255,59,92,0.08); color: #ff3b5c; padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+    .empty { text-align: center; padding: 60px; color: #4a6278; }
+    .pagination { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 20px; font-size: 12px; color: #4a6278; }
+    .page-btn { padding: 6px 12px; background: #0e1419; border: 1px solid #1e2d3d; color: #4a6278; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 12px; }
+    .page-btn:hover { border-color: #00d4ff; color: #00d4ff; }
+    .page-btn.active { border-color: #00d4ff; color: #00d4ff; }
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #0e1419; border: 1px solid #1e2d3d; border-radius: 14px; padding: 28px; width: 100%; max-width: 460px; }
+    .modal h3 { font-size: 16px; margin-bottom: 6px; }
+    .modal p { color: #4a6278; font-size: 12px; margin-bottom: 18px; }
+    .modal textarea { width: 100%; background: #080c10; border: 1px solid #1e2d3d; color: #e8f4f8; border-radius: 8px; padding: 12px; font-family: inherit; font-size: 12px; resize: vertical; min-height: 90px; outline: none; }
+    .modal textarea:focus { border-color: #00d4ff; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 200; transform: translateY(60px); opacity: 0; transition: all 0.3s; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: rgba(0,255,157,0.15); border: 1px solid rgba(0,255,157,0.3); color: #00ff9d; }
+    .toast.error { background: rgba(255,59,92,0.15); border: 1px solid rgba(255,59,92,0.3); color: #ff3b5c; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>⚡ CORTEX — Alert Triage</h1>
+  <div style="display:flex;gap:16px;align-items:center;">
+    <a href="/admin?token=cortex-admin-2025">← Overview</a>
+    <a href="/admin/logs?token=cortex-admin-2025">All Logs</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-row" id="statsRow">
+  <div class="stat-box"><div class="stat-label">Open</div><div class="stat-val open" id="statOpen">—</div></div>
+  <div class="stat-box"><div class="stat-label">Resolved</div><div class="stat-val resolved" id="statResolved">—</div></div>
+  <div class="stat-box"><div class="stat-label">Dismissed</div><div class="stat-val dismissed" id="statDismissed">—</div></div>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <select id="filterSeverity" onchange="loadAlerts(1)">
+    <option value="">All Severities</option>
+    <option value="HIGH">HIGH</option>
+    <option value="MEDIUM">MEDIUM</option>
+    <option value="LOW">LOW</option>
+  </select>
+  <select id="filterAction" onchange="loadAlerts(1)">
+    <option value="">All Actions</option>
+    <option value="LOCKED">LOCKED</option>
+    <option value="IP_BLOCKED">IP_BLOCKED</option>
+    <option value="WARNED">WARNED</option>
+    <option value="ALLOWED">ALLOWED</option>
+  </select>
+  <button class="btn btn-primary" onclick="loadAlerts(1)">Refresh</button>
+  <button class="btn btn-ghost" onclick="selectAll()">Select All</button>
+</div>
+
+<!-- Bulk action bar -->
+<div class="bulk-bar" id="bulkBar">
+  <span id="selectedCount">0 selected</span>
+  <button class="btn btn-danger" onclick="bulkDismissSelected()">Dismiss Selected</button>
+  <button class="btn btn-ghost" onclick="clearSelection()">Clear</button>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:32px"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+        <th>Time</th>
+        <th>User</th>
+        <th>IP</th>
+        <th>Risk</th>
+        <th>Severity</th>
+        <th>Action</th>
+        <th>Rules Triggered</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="alertsBody"></tbody>
+  </table>
+  <div id="emptyMsg" class="empty" style="display:none">✓ No open alerts</div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Resolve Modal -->
+<div class="modal-overlay" id="resolveModal">
+  <div class="modal">
+    <h3>Resolve Alert #<span id="modalAlertId"></span></h3>
+    <p>Add an analyst note (optional) explaining why this alert is resolved.</p>
+    <textarea id="analystNote" placeholder="e.g. Confirmed legitimate user, false positive from VPN usage..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-resolve" onclick="confirmResolve()">Mark Resolved</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentPage = 1;
+  let selectedIds = new Set();
+  let pendingResolveId = null;
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.className = `toast ${type}`, 2500);
+  }
+
+  async function loadStats() {
+    const r = await fetch('/admin/alerts/stats');
+    const d = await r.json();
+    document.getElementById('statOpen').textContent = d.open;
+    document.getElementById('statResolved').textContent = d.resolved;
+    document.getElementById('statDismissed').textContent = d.dismissed;
+  }
+
+  async function loadAlerts(page = 1) {
+    currentPage = page;
+    const severity = document.getElementById('filterSeverity').value;
+    const action = document.getElementById('filterAction').value;
+    let url = `/admin/alerts/data?page=${page}&per_page=20`;
+    if (severity) url += `&severity=${severity}`;
+    if (action) url += `&action=${action}`;
+
+    const r = await fetch(url);
+    const d = await r.json();
+    renderAlerts(d.logs);
+    renderPagination(d.total_pages, page);
+    loadStats();
+  }
+
+  function renderAlerts(logs) {
+    const tbody = document.getElementById('alertsBody');
+    const empty = document.getElementById('emptyMsg');
+    if (!logs.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = logs.map(log => {
+      const rules = Array.isArray(log.triggered_rules) ? log.triggered_rules : [];
+      const ruleTags = rules.length
+        ? rules.map(r => `<span class="rule-tag">${r.rule_name || r}</span>`).join('')
+        : '<span style="color:#4a6278">—</span>';
+      const ts = log.timestamp ? log.timestamp.replace('T', ' ').substring(0, 19) : '—';
+      return `
+        <tr id="row-${log.id}">
+          <td><input type="checkbox" class="row-check" value="${log.id}" onchange="onCheckChange(this)"></td>
+          <td style="color:#4a6278;white-space:nowrap">${ts}</td>
+          <td style="color:#00d4ff">${log.username || '—'}</td>
+          <td style="font-family:monospace">${log.ip_address || '—'}</td>
+          <td style="font-weight:700">${log.risk_score ?? 0}</td>
+          <td><span class="badge badge-${log.severity}">${log.severity}</span></td>
+          <td><span class="badge badge-${log.enforcement_action}">${log.enforcement_action}</span></td>
+          <td><div class="rules-list">${ruleTags}</div></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-resolve" onclick="openResolveModal(${log.id})">✓ Resolve</button>
+              <button class="btn-dismiss" onclick="dismissOne(${log.id})">✕ Dismiss</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderPagination(totalPages, current) {
+    const p = document.getElementById('pagination');
+    if (totalPages <= 1) { p.innerHTML = ''; return; }
+    let html = '';
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="loadAlerts(${i})">${i}</button>`;
+    }
+    p.innerHTML = html;
+  }
+
+  async function dismissOne(id) {
+    const r = await fetch(`/admin/alerts/${id}/dismiss`, { method: 'POST' });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById(`row-${id}`)?.remove();
+      showToast('Alert dismissed');
+      loadStats();
+    }
+  }
+
+  function openResolveModal(id) {
+    pendingResolveId = id;
+    document.getElementById('modalAlertId').textContent = id;
+    document.getElementById('analystNote').value = '';
+    document.getElementById('resolveModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('resolveModal').classList.remove('open');
+    pendingResolveId = null;
+  }
+
+  async function confirmResolve() {
+    const note = document.getElementById('analystNote').value.trim();
+    const r = await fetch(`/admin/alerts/${pendingResolveId}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById(`row-${pendingResolveId}`)?.remove();
+      closeModal();
+      showToast('Alert resolved ✓');
+      loadStats();
+    }
+  }
+
+  function onCheckChange(el) {
+    el.checked ? selectedIds.add(parseInt(el.value)) : selectedIds.delete(parseInt(el.value));
+    updateBulkBar();
+  }
+
+  function toggleAll(master) {
+    document.querySelectorAll('.row-check').forEach(cb => {
+      cb.checked = master.checked;
+      master.checked ? selectedIds.add(parseInt(cb.value)) : selectedIds.delete(parseInt(cb.value));
+    });
+    updateBulkBar();
+  }
+
+  function selectAll() {
+    document.querySelectorAll('.row-check').forEach(cb => { cb.checked = true; selectedIds.add(parseInt(cb.value)); });
+    updateBulkBar();
+  }
+
+  function clearSelection() {
+    selectedIds.clear();
+    document.querySelectorAll('.row-check').forEach(cb => cb.checked = false);
+    document.getElementById('checkAll').checked = false;
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    document.getElementById('selectedCount').textContent = `${selectedIds.size} selected`;
+    bar.classList.toggle('visible', selectedIds.size > 0);
+  }
+
+  async function bulkDismissSelected() {
+    if (!selectedIds.size) return;
+    const r = await fetch('/admin/alerts/bulk-dismiss', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [...selectedIds] })
+    });
+    const d = await r.json();
+    showToast(`${d.dismissed} alerts dismissed`);
+    clearSelection();
+    loadAlerts(currentPage);
+  }
+
+  // Close modal on overlay click
+  document.getElementById('resolveModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  loadAlerts(1);
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}CORTEX — Threat Map{% endblock %}
+{% block heading %}Threat Map{% endblock %}
+{% block breadcrumb %}CORTEX / Threats{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+    <!-- Triggered Rules -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Triggered Rules (24h)</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rule Name</th>
+                        <th>Count</th>
+                        <th>Total Points</th>
+                    </tr>
+                </thead>
+                <tbody id="threats-rules-tbody">
+                    <tr><td colspan="3"><div class="loader"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Top Attacking IPs -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Top Attacking IPs</span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Attempts</th>
+                        <th>Total Risk</th>
+                    </tr>
+                </thead>
+                <tbody id="threats-ips-tbody">
+                    <tr><td colspan="3"><div class="loader"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Currently Blocked IPs -->
+<div class="card" style="margin-top: 20px;">
+    <div class="card-header">
+        <span class="card-title">Currently Blocked IPs</span>
+        <button class="btn btn-sm btn-primary" onclick="unblockIP()">Manual Unblock</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>IP Address</th>
+                    <th>Locked Until</th>
+                    <th>Reason</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="threats-blocked-tbody">
+                <tr><td colspan="4"><div class="loader"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    startAutoRefresh(loadThreats, 30000);
+</script>
+{% endblock %}

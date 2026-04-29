@@ -1,0 +1,9 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# SQLite database
+cortex.db
+
+# Environment files
+.env

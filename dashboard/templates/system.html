@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}CORTEX — System Health{% endblock %}
+{% block heading %}System Health{% endblock %}
+{% block breadcrumb %}CORTEX / System{% endblock %}
+
+{% block content %}
+<div class="metrics-grid">
+    <div class="metric-card blue">
+        <div class="metric-label">Database Size</div>
+        <div class="metric-value blue" id="sys-db-size">—</div>
+    </div>
+    <div class="metric-card green">
+        <div class="metric-label">Total Users</div>
+        <div class="metric-value green" id="sys-total-users">—</div>
+    </div>
+    <div class="metric-card amber">
+        <div class="metric-label">Total Login Attempts</div>
+        <div class="metric-value amber" id="sys-total-attempts">—</div>
+    </div>
+    <div class="metric-card red">
+        <div class="metric-label">Enforcement Logs</div>
+        <div class="metric-value red" id="sys-total-logs">—</div>
+    </div>
+    <div class="metric-card green">
+        <div class="metric-label">Decay Events Today</div>
+        <div class="metric-value green" id="sys-decay-events">—</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Threat Intelligence Feed</span>
+        </div>
+        <div style="margin-bottom:12px">
+            <div class="metric-label" style="margin-bottom:4px">Feed Entries</div>
+            <div class="metric-value blue" style="font-size:20px" id="sys-feed-entries">—</div>
+        </div>
+        <div style="margin-bottom:16px">
+            <div class="metric-label" style="margin-bottom:4px">Last Updated</div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary)" id="sys-feed-updated">—</div>
+        </div>
+        <button class="btn btn-primary" id="btn-refresh-feeds" onclick="refreshFeeds()">
+            ↻ Refresh Feeds
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">System Information</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);line-height:2">
+            <div><span style="color:var(--text-dim)">Engine:</span> CORTEX v2.0</div>
+            <div><span style="color:var(--text-dim)">Architecture:</span> Rule-Based Deterministic</div>
+            <div><span style="color:var(--text-dim)">Detection Modes:</span> 10 Active Rules</div>
+            <div><span style="color:var(--text-dim)">ML Components:</span> None (by design)</div>
+            <div><span style="color:var(--text-dim)">Database:</span> SQLite3</div>
+            <div><span style="color:var(--text-dim)">Framework:</span> Flask 3.x</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    startAutoRefresh(loadSystem, 60000);
+</script>
+{% endblock %}
