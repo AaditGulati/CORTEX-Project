@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set "VIRTUAL_ENV=C:\Users\palak\Downloads\CORTEX-Project-antigravity-experiment (2)\CORTEX-Project-antigravity-experiment\CORTEX-Project-antigravity-experiment\venv"
+set "VIRTUAL_ENV=C:\Users\palak\Downloads\CORTEX-Project\CORTEX-Project\venv"
 
 if not defined PROMPT set PROMPT=$P$G
 
